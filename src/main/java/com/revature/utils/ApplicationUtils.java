@@ -1,25 +1,93 @@
 package com.revature.utils;
 
+import java.util.Properties;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.apache.log4j.Logger;
 import org.quartz.Scheduler;
 import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Component;
+
+import com.revature.data.EmailConfigDAO;
+import com.revature.models.MailDTO;
 
 @Component
 public class ApplicationUtils {
-  public static Scheduler scheduler;
+  private static Logger logger = Logger.getLogger(ApplicationUtils.class);
+  public Scheduler scheduler;
+
+  public JavaMailSenderImpl javaMailSender;
+  public MailDTO maildto;
+
+  @Autowired
+  private EmailConfigDAO emailConfigDAO;
 
   @PostConstruct
   public void init() throws Exception {
     scheduler = StdSchedulerFactory.getDefaultScheduler();
     scheduler.start();
+    loadJavaMailSender();
   }
 
   @PreDestroy
   public void destroy() throws Exception {
     scheduler.shutdown();
   }
+
+  public void loadJavaMailSender() {
+    try {
+      maildto = emailConfigDAO.getMailProperties();
+      javaMailSender = new JavaMailSenderImpl();
+      if (maildto.getMailHost() != null) {
+        javaMailSender.setHost(maildto.getMailHost());
+      }
+      if (maildto.getMailPort() != 0) {
+        javaMailSender.setPort(maildto.getMailPort());
+      }
+      if (maildto.getUsername() != null) {
+        javaMailSender.setUsername(maildto.getUsername());
+      }
+      if (maildto.getPassword() != null) {
+        javaMailSender.setPassword(maildto.getPassword());
+      }
+      if (maildto.isSmtpSsl()) {
+        javaMailSender.setProtocol("smtps");
+      }
+      Properties javaMailProperties = null;
+      if (maildto.isSmtpStartTls()) {
+        if (javaMailProperties == null) {
+          javaMailProperties = new Properties();
+        }
+        javaMailProperties.put("mail.smtp.starttls.enable", true);
+      }
+      if (maildto.isSmtpAuth()) {
+        if (javaMailProperties == null) {
+          javaMailProperties = new Properties();
+        }
+        javaMailProperties.put("mail.smtp.auth", true);
+      }
+      if (maildto.isQuitWait()) {
+        if (javaMailProperties == null) {
+          javaMailProperties = new Properties();
+        }
+        javaMailProperties.put("mail.smtp.quitwait", true);
+      } else {
+        if (javaMailProperties == null) {
+          javaMailProperties = new Properties();
+        }
+        javaMailProperties.put("mail.smtp.quitwait", false);
+      }
+      if (javaMailProperties != null) {
+        javaMailSender.setJavaMailProperties(javaMailProperties);
+      }
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
+    }
+  }
+
 
 }

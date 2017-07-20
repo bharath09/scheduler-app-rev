@@ -35,9 +35,9 @@ public class AssignActivitiesDAO implements Serializable {
       s.setInternName(rs.getString("internName"));
       s.setInternEmail(rs.getString("internEmail"));
       s.setAsmtName(rs.getString("asmtName"));
-      s.setStartTime(rs.getDate("startTime"));
-      s.setEndTime(rs.getDate("endTime"));
-      s.setEmailTriggerTime(rs.getDate("emailTriggerTime"));
+      s.setStartTime(rs.getTimestamp("startTime"));
+      s.setEndTime(rs.getTimestamp("endTime"));
+      s.setEmailTriggerTime(rs.getTimestamp("emailTriggerTime"));
       s.setStatus(rs.getString("timer_status"));
       return s;
     }

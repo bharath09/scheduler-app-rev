@@ -1,6 +1,9 @@
 package com.revature.service;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 import org.quartz.JobBuilder;
@@ -24,18 +27,25 @@ public class AssignActivitiesService implements Serializable {
 
   @Autowired
   private AssignActivitiesDAO activitiesDAO;
+  @Autowired
+  private ApplicationUtils applicationUtils;
 
   public void scheduleEmailJob(String emailJobId) throws Exception {
-    AssignedInternActivityScheduler scheduler = activitiesDAO.getSchedulerByJobId(emailJobId);
-
-    if ("assign_now".equals(scheduler.getStatus()) || !new Date().after(scheduler.getStartTime())) {
-      Scheduler s = ApplicationUtils.scheduler;
+    AssignedInternActivityScheduler data = activitiesDAO.getSchedulerByJobId(emailJobId);
+    if (data != null
+        && ("assign_now".equals(data.getStatus()) || !new Date().after(data.getStartTime()))) {
+      Scheduler s = applicationUtils.scheduler;
       JobDetail job = JobBuilder.newJob(AssignedItemEmailTriggerJob.class)
           .withIdentity("jobKey", emailJobId).build();
       JobDataMap jobDataMap = job.getJobDataMap();
-      jobDataMap.put("source", scheduler);
-      Trigger trigger =
-          TriggerBuilder.newTrigger().startAt(scheduler.getEmailTriggerTime()).build();
+      jobDataMap.put("source", data);
+
+      ZonedDateTime utcTime = ZonedDateTime.of(
+          new Timestamp(data.getEmailTriggerTime().getTime()).toLocalDateTime(), ZoneId.of("UTC"));
+      Date triggerTime =
+          Timestamp.valueOf(utcTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime());
+
+      Trigger trigger = TriggerBuilder.newTrigger().forJob(job).startAt(triggerTime).build();
       s.scheduleJob(job, trigger);
     }
   }
