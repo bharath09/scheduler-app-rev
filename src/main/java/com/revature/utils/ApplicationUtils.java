@@ -15,16 +15,22 @@ import org.springframework.stereotype.Component;
 import com.revature.data.EmailConfigDAO;
 import com.revature.models.MailDTO;
 
+import freemarker.template.Configuration;
+
 @Component
 public class ApplicationUtils {
   private static Logger logger = Logger.getLogger(ApplicationUtils.class);
-  public Scheduler scheduler;
 
+  public Scheduler scheduler;
   public JavaMailSenderImpl javaMailSender;
   public MailDTO maildto;
 
   @Autowired
   private EmailConfigDAO emailConfigDAO;
+
+  @Autowired
+  private Configuration configuration;
+
 
   @PostConstruct
   public void init() throws Exception {
@@ -41,6 +47,7 @@ public class ApplicationUtils {
   public void loadJavaMailSender() {
     try {
       maildto = emailConfigDAO.getMailProperties();
+      maildto.setFreeMarkerConfiguration(configuration);
       javaMailSender = new JavaMailSenderImpl();
       if (maildto.getMailHost() != null) {
         javaMailSender.setHost(maildto.getMailHost());

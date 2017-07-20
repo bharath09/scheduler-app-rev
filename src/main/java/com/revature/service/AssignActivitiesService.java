@@ -1,11 +1,15 @@
 package com.revature.service;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Date;
+import static com.revature.utils.Constants.UTC;
+import static java.sql.Timestamp.valueOf;
 
+import java.io.Serializable;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
+
+import org.apache.log4j.Logger;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -19,10 +23,11 @@ import com.revature.data.AssignActivitiesDAO;
 import com.revature.jobs.AssignedItemEmailTriggerJob;
 import com.revature.models.AssignedInternActivityScheduler;
 import com.revature.utils.ApplicationUtils;
+import com.revature.utils.CalendarUtils;
 
 @Service
 public class AssignActivitiesService implements Serializable {
-
+  private static Logger logger = Logger.getLogger(AssignActivitiesService.class);
   private static final long serialVersionUID = 1L;
 
   @Autowired
@@ -32,21 +37,38 @@ public class AssignActivitiesService implements Serializable {
 
   public void scheduleEmailJob(String emailJobId) throws Exception {
     AssignedInternActivityScheduler data = activitiesDAO.getSchedulerByJobId(emailJobId);
-    if (data != null
-        && ("assign_now".equals(data.getStatus()) || !new Date().after(data.getStartTime()))) {
-      Scheduler s = applicationUtils.scheduler;
-      JobDetail job = JobBuilder.newJob(AssignedItemEmailTriggerJob.class)
-          .withIdentity("jobKey", emailJobId).build();
-      JobDataMap jobDataMap = job.getJobDataMap();
-      jobDataMap.put("source", data);
+    scheduleEmailJob(data);
+  }
 
-      ZonedDateTime utcTime = ZonedDateTime.of(
-          new Timestamp(data.getEmailTriggerTime().getTime()).toLocalDateTime(), ZoneId.of("UTC"));
-      Date triggerTime =
-          Timestamp.valueOf(utcTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime());
+  private void scheduleEmailJob(AssignedInternActivityScheduler data) {
+    try {
+      if (data != null && "scheduled".equals(data.getEmailJobStatus())
+          && ("assign_now".equals(data.getStatus())
+              || !valueOf(LocalDateTime.now(ZoneId.of(UTC))).after(data.getEndTime()))) {
+        Scheduler s = applicationUtils.scheduler;
+        JobDetail job = JobBuilder.newJob(AssignedItemEmailTriggerJob.class)
+            .withIdentity("jobKey", data.getEmailJobId()).build();
+        JobDataMap jobDataMap = job.getJobDataMap();
+        jobDataMap.put("source", data);
 
-      Trigger trigger = TriggerBuilder.newTrigger().forJob(job).startAt(triggerTime).build();
-      s.scheduleJob(job, trigger);
+        Trigger trigger = TriggerBuilder.newTrigger().forJob(job)
+            .startAt(CalendarUtils.convertToSpecificTimeZone(data.getEmailTriggerTime(), UTC,
+                ZoneId.systemDefault().toString()).orElse(null))
+            .build();
+        s.scheduleJob(job, trigger);
+      }
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
     }
   }
+
+  public void schedulePendingEmailJobs() {
+    try {
+      List<AssignedInternActivityScheduler> data = activitiesDAO.getPendingEmailJobs();
+      data.stream().forEach(this::scheduleEmailJob);
+    } catch (SQLException e) {
+      logger.error(e.getMessage(), e);
+    }
+  }
+
 }

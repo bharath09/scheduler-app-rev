@@ -16,10 +16,10 @@ public class AssignedInternActivityScheduler implements Serializable {
   private Long internId;
   private String internName;
   private String internEmail;
+  private String activityType;
 
-
-  private Long asmtId;
-  private String asmtName;
+  private Long activityId;
+  private String activityName;
 
   private String status;
 
@@ -32,6 +32,10 @@ public class AssignedInternActivityScheduler implements Serializable {
   private String jobStatus;
 
   private String emailJobStatus;
+
+  private String timeZone;
+  private String startTimeString;
+  private String endTimeString;
 
   public Long getId() {
     return id;
@@ -65,13 +69,7 @@ public class AssignedInternActivityScheduler implements Serializable {
     this.internId = internId;
   }
 
-  public Long getAsmtId() {
-    return asmtId;
-  }
 
-  public void setAsmtId(Long asmtId) {
-    this.asmtId = asmtId;
-  }
 
   public String getInternName() {
     return internName;
@@ -89,12 +87,28 @@ public class AssignedInternActivityScheduler implements Serializable {
     this.internEmail = internEmail;
   }
 
-  public String getAsmtName() {
-    return asmtName;
+  public String getActivityType() {
+    return activityType;
   }
 
-  public void setAsmtName(String asmtName) {
-    this.asmtName = asmtName;
+  public void setActivityType(String activityType) {
+    this.activityType = activityType;
+  }
+
+  public Long getActivityId() {
+    return activityId;
+  }
+
+  public void setActivityId(Long activityId) {
+    this.activityId = activityId;
+  }
+
+  public String getActivityName() {
+    return activityName;
+  }
+
+  public void setActivityName(String activityName) {
+    this.activityName = activityName;
   }
 
   public String getStatus() {
@@ -145,5 +159,28 @@ public class AssignedInternActivityScheduler implements Serializable {
     this.emailJobStatus = emailJobStatus;
   }
 
+  public String getTimeZone() {
+    return timeZone;
+  }
+
+  public void setTimeZone(String timeZone) {
+    this.timeZone = timeZone;
+  }
+
+  public String getStartTimeString() {
+    return startTimeString;
+  }
+
+  public void setStartTimeString(String startTimeString) {
+    this.startTimeString = startTimeString;
+  }
+
+  public String getEndTimeString() {
+    return endTimeString;
+  }
+
+  public void setEndTimeString(String endTimeString) {
+    this.endTimeString = endTimeString;
+  }
 
 }
