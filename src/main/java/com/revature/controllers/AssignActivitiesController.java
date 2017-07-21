@@ -16,7 +16,6 @@ public class AssignActivitiesController {
   @RequestMapping("/schedule_email")
   public void scheduleEmail(@RequestParam(value = "emailJobId") String emailJobId)
       throws Exception {
-
     assignActivitiesService.scheduleEmailJob(emailJobId);
   }
 }

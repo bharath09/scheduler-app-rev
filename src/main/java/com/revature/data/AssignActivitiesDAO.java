@@ -5,8 +5,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.sql.DataSource;
 
@@ -40,9 +46,9 @@ public class AssignActivitiesDAO implements Serializable {
       s.setInternName(rs.getString("internName"));
       s.setInternEmail(rs.getString("internEmail"));
       s.setActivityName(rs.getString("asmtName"));
-      s.setStartTime(rs.getTimestamp("startTime"));
-      s.setEndTime(rs.getTimestamp("endTime"));
-      s.setEmailTriggerTime(rs.getTimestamp("emailTriggerTime"));
+      s.setStartTime(getDate(rs.getString("startTime")));
+      s.setEndTime(getDate(rs.getString("endTime")));
+      s.setEmailTriggerTime(getDate(rs.getString("emailTriggerTime")));
       s.setTimeZone(rs.getString("INTERN_TIMEZONE"));
 
       s.setStatus(rs.getString("timer_status"));
@@ -61,7 +67,7 @@ public class AssignActivitiesDAO implements Serializable {
     ps.executeUpdate();
   }
 
-  public List<AssignedInternActivityScheduler> getPendingEmailJobs() throws SQLException {
+  public List<AssignedInternActivityScheduler> getPendingEmailJobs() throws Exception {
     List<AssignedInternActivityScheduler> datas = new ArrayList<>();
     Connection con = dataSource.getConnection();
     PreparedStatement ps =
@@ -78,9 +84,9 @@ public class AssignActivitiesDAO implements Serializable {
       s.setInternName(rs.getString("internName"));
       s.setInternEmail(rs.getString("internEmail"));
       s.setActivityName(rs.getString("asmtName"));
-      s.setStartTime(rs.getTimestamp("startTime"));
-      s.setEndTime(rs.getTimestamp("endTime"));
-      s.setEmailTriggerTime(rs.getTimestamp("emailTriggerTime"));
+      s.setStartTime(getDate(rs.getString("startTime")));
+      s.setEndTime(getDate(rs.getString("endTime")));
+      s.setEmailTriggerTime(getDate(rs.getString("emailTriggerTime")));
       s.setTimeZone(rs.getString("INTERN_TIMEZONE"));
       s.setStatus(rs.getString("timer_status"));
       s.setEmailJobStatus(rs.getString("email_job_status"));
@@ -88,5 +94,13 @@ public class AssignActivitiesDAO implements Serializable {
       datas.add(s);
     }
     return datas;
+  }
+
+  public Date getDate(String dateString) throws ParseException {
+    if (dateString != null) {
+      DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+      return formatter.parse(dateString);
+    }
+    return null;
   }
 }

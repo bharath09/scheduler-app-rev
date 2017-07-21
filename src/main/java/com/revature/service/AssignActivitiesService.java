@@ -47,9 +47,12 @@ public class AssignActivitiesService implements Serializable {
               || !valueOf(LocalDateTime.now(ZoneId.of(UTC))).after(data.getEndTime()))) {
         Scheduler s = applicationUtils.scheduler;
         JobDetail job = JobBuilder.newJob(AssignedItemEmailTriggerJob.class)
-            .withIdentity("jobKey", data.getEmailJobId()).build();
+            .withIdentity(data.getEmailJobId()).build();
         JobDataMap jobDataMap = job.getJobDataMap();
         jobDataMap.put("source", data);
+        jobDataMap.put("url",
+            "http://localhost/core/resources/scheduler/triggerEmailJob?emailJobId="
+                + data.getEmailJobId());
 
         Trigger trigger = TriggerBuilder.newTrigger().forJob(job)
             .startAt(CalendarUtils.convertToSpecificTimeZone(data.getEmailTriggerTime(), UTC,
@@ -62,7 +65,7 @@ public class AssignActivitiesService implements Serializable {
     }
   }
 
-  public void schedulePendingEmailJobs() {
+  public void schedulePendingEmailJobs() throws Exception {
     try {
       List<AssignedInternActivityScheduler> data = activitiesDAO.getPendingEmailJobs();
       data.stream().forEach(this::scheduleEmailJob);
