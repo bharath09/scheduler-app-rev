@@ -19,7 +19,6 @@ public class CalendarUtils {
     Timestamp dateOut = null;
     try {
       if (gnDate != null && isNotBlank(gnDateTimeZone)) {
-
         ZonedDateTime x = ZonedDateTime.of(new Timestamp(gnDate.getTime()).toLocalDateTime(),
             ZoneId.of(gnDateTimeZone));
         dateOut = valueOf(x.withZoneSameInstant(ZoneId.of(convertToTimeZone)).toLocalDateTime());

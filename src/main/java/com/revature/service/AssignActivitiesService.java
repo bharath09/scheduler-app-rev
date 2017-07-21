@@ -50,9 +50,8 @@ public class AssignActivitiesService implements Serializable {
             .withIdentity(data.getEmailJobId()).build();
         JobDataMap jobDataMap = job.getJobDataMap();
         jobDataMap.put("source", data);
-        jobDataMap.put("url",
-            "http://localhost/core/resources/scheduler/triggerEmailJob?emailJobId="
-                + data.getEmailJobId());
+        jobDataMap.put("url", applicationUtils.getProperty("custom.core.app.email.trigger.url")
+            + data.getEmailJobId());
 
         Trigger trigger = TriggerBuilder.newTrigger().forJob(job)
             .startAt(CalendarUtils.convertToSpecificTimeZone(data.getEmailTriggerTime(), UTC,

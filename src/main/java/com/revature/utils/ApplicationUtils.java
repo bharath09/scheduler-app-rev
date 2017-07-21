@@ -5,10 +5,12 @@ import java.util.Properties;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.quartz.Scheduler;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +33,9 @@ public class ApplicationUtils {
   @Autowired
   private Configuration configuration;
 
+  @Autowired
+  private Environment environment;
+
 
   @PostConstruct
   public void init() throws Exception {
@@ -42,6 +47,13 @@ public class ApplicationUtils {
   @PreDestroy
   public void destroy() throws Exception {
     scheduler.shutdown();
+  }
+
+  public String getProperty(String key) {
+    if (StringUtils.isNotBlank(key)) {
+      return environment.getProperty(key);
+    }
+    return key;
   }
 
   public void loadJavaMailSender() {

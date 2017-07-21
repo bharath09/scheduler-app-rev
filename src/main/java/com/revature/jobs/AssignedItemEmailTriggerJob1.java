@@ -52,8 +52,9 @@ public class AssignedItemEmailTriggerJob1 implements Job {
       toAddress.add(data.getInternEmail());
 
       emailWrapper.setToAddress(toAddress);
-      emailWrapper.setBccAddress(Stream.of(System.getenv("sink_mail").split(","))
-          .filter(EMAIL_PATTERN.asPredicate()).collect(Collectors.toList()));
+      emailWrapper
+          .setBccAddress(Stream.of(applicationUtils.getProperty("custom.sink_mail").split(","))
+              .filter(EMAIL_PATTERN.asPredicate()).collect(Collectors.toList()));
 
       emailWrapper.setCcAddress(ccAddress);
       emailWrapper.setToName(data.getInternName());
@@ -66,7 +67,7 @@ public class AssignedItemEmailTriggerJob1 implements Job {
       templateVars.put("subject", "RevaturePro | An Assigned Activity Becomes Available Soon!");
       templateVars.put("data", data);
 
-      templateVars.put("regardsUrl", System.getenv("EMAIL_REGARDS_URL"));
+      templateVars.put("regardsUrl", applicationUtils.getProperty("custom.EMAIL_REGARDS_URL"));
       templateVars.put("year", String.valueOf(Calendar.getInstance().get(Calendar.YEAR)));
       emailWrapper.setTemplateVars(templateVars);
 
