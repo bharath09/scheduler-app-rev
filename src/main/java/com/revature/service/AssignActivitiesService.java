@@ -50,7 +50,7 @@ public class AssignActivitiesService implements Serializable {
             .withIdentity(data.getEmailJobId()).build();
         JobDataMap jobDataMap = job.getJobDataMap();
         jobDataMap.put("source", data);
-        jobDataMap.put("url", applicationUtils.getProperty("custom.core.app.email.trigger.url")
+        jobDataMap.put("url", applicationUtils.getProperty("custom.core_app_email_trigger_url")
             + data.getEmailJobId());
 
         Trigger trigger = TriggerBuilder.newTrigger().forJob(job)
